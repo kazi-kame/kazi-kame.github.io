@@ -74,11 +74,13 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 14px;
       line-height: 1.7;
-      min-height: 100vh;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 80px;
+      margin: 0;
+      padding: 0;
     }
 
     /* SCANLINE OVERLAY */
@@ -100,15 +102,13 @@
     /* TERMINAL WINDOW */
     .terminal {
       width: 100%;
-      max-width: 860px;
+      height: 100vh;
       background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: none;
+      border-radius: 0;
       overflow: hidden;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.03),
-        0 32px 80px rgba(0,0,0,0.7),
-        0 0 60px rgba(224,123,57,0.04);
+      display: flex;
+      flex-direction: column;
     }
 
     /* TITLEBAR */
@@ -158,9 +158,8 @@
 
     /* OUTPUT AREA */
     .output {
-      padding: 24px 28px;
-      min-height: 420px;
-      max-height: 70vh;
+      padding: 20px 32px;
+      flex: 1;
       overflow-y: auto;
       scroll-behavior: smooth;
     }
@@ -439,6 +438,23 @@
     }
     @keyframes blink { 50% { opacity: 0; } }
 
+    /* PHOTO ASCII */
+    .photo-ascii {
+      font-size: 7.5px;
+      line-height: 1.15;
+      color: var(--accent);
+      white-space: pre;
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0.85;
+    }
+    .whoami-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .whoami-photo { flex-shrink: 0; }
+    .whoami-info  { flex: 1; }
+
     /* WHOAMI */
     .whoami-block {
       border: 1px solid var(--border);
@@ -493,11 +509,12 @@
 
     /* RESPONSIVE */
     @media (max-width: 600px) {
-      body { padding: 12px 8px 60px; font-size: 12px; }
-      .output { padding: 16px 14px; }
+      body { font-size: 12px; }
+      .output { padding: 12px 14px; }
       .input-area { padding: 10px 14px; }
       .ascii-art { font-size: 9px; }
       .welcome-name { font-size: 16px; }
+      .photo-ascii { font-size: 5px !important; line-height: 1.1 !important; }
     }
   </style>
 </head>
@@ -543,10 +560,10 @@
 
 const DATA = {
   whoami: {
-    name:     "Kami-Kazi (KZ)",
+    name:     "Kazi (KZ)",
     pronouns: "ILove/MyGirlfriend",
-    about:    "Physics student. Data science on the side. I like studying randomness.",
-    location: "[Your City / University]",
+    about:    "Undergrad physics and data science student, studying randomness, doing random things, and my girlfriend.",
+    location: "Pune — Fergusson College  /  Chennai — IIT Madras  /  Navi Mumbai — My girlfriend's place",
     status:   "Currently: probably watching a pendulum diverge",
   },
 
@@ -595,23 +612,97 @@ const DATA = {
 
   poems: [
     {
-      id:    "poem-1",
-      title: "[poem title here]",
-      date:  "[date]",
+      id:    "uns",
+      title: "Uns (उन्स / اُنس)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
       text: {
-        urdu:    "[اردو میں نظم یہاں لکھیں\nہر سطر اسی طرح محفوظ رہے گی]",
-        english: "[Your English version goes here.\nEach line break is preserved.]",
-        hindi:   "[यहाँ हिन्दी संस्करण लिखें\nहर पंक्ति सुरक्षित रहेगी]",
+        hindi: "लिखने वाले ने भी क्या खूब लिखा है\nखूब लिखा पर झूट लिखा है\nपर क्यूँ माँगे फिर झूट निगाहें?\nके सच की बारिश उन्हें खूब भीगाए\nये बारिश के रंग मुझे खूब सताएं\nसुरमई से बादल जैसे उसकी निगाहें\nचंद पल है आती और फिर लौट जाए\nलौट जाती ऐसे के फूल मुरझाए\nये धड़कता है फूल, क्यूँ ना रुख़ जाए\nमुड़ जाए हम ऐसे के ना रुख़ पाए\nना ज़िंदा हैं हम और ना मुर्दा हैं\nहम शायर हैं बस और शायर लिखता है",
+        english: "Likhne wale ne bhi kya khoob likha hai\nKhoob likha par jhoot likha hai\nPar kyun mange phir jhoot nigahein?\nKe sach ki barish unhein khoob bheegaye\nYe barish ke rang mujhe khoob satayein\nSurmayi se baadal jaise uski nigahein\nChand pal hai aati aur phir laut jaye\nLaut jaati aise ke phool murjhaye\nYe dhadakta hai phool, kyun na rukh jaye\nMud jaye hum aise ke na rukh paye\nNa zinda hain hum aur na murda hain\nHum shayar hain bas aur shayar likhta hai",
+        urdu: "لکھنے والے نے بھی کیا خوب لکھا ہے\nخوب لکھا پر جھوٹ لکھا ہے\nپر کیوں مانگے پھر جھوٹ نگاہیں؟\nکہ سچ کی بارش انہیں خوب بھگائے\nیہ بارش کے رنگ مجھے خوب ستائیں\nسرمئی سے بادل جیسے اس کی نگاہیں\nچند پل ہے آتی اور پھر لوٹ جائے\nلوٹ جاتی ایسے کہ پھول مرجھائے\nیہ دھڑکتا ہے پھول، کیوں نا رخ جائے\nمڑ جائے ہم ایسے کہ نا رخ پائے\nنا زندہ ہیں ہم اور نا مردہ ہیں\nہم شاعر ہیں بس اور شاعر لکھتا ہے",
       },
     },
     {
-      id:    "poem-2",
-      title: "[poem title here]",
-      date:  "[date]",
+      id:    "benaam-1",
+      title: "Benaam Nazm (बेनाम नज़्म / بے نام نظم)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
       text: {
-        urdu:    "[دوسری نظم اردو میں]",
-        english: "[Second poem English version]",
-        hindi:   "[दूसरी कविता हिन्दी में]",
+        hindi: '"इन बारिशों से दोस्ती अच्छी नहीं ज़मीर\nकच्चा तेरा मकान है कुछ लिहाज़ तो कर\nबुखार में भी बरसात तलाशता है\nकुछ देर थम जा अपना इलाज तो कर"\n\nउसकी आमद सावन जैसी है ऐ खैर-ख्वाह,\nवो बरसे मैं ना भीगूँ, ये मुमकिन कहाँ।\nतुम इलाज की बात करते हो ऐ खैर-ख्वाह,\nजो इश्क़ से कतराए, वो मोमिन कहाँ।\n\n"भेजा था तुझे जहान देखने को ऐ ज़मीर,\nतू सिर्फ एक चेहेरे को ही ताकता रह गया?"\n\nवो चाँद सी हसीन थी, सो चाँद सी दूर भी,\nमैं उम्र भर फासलों को ही नापता रह गया।',
+        english: '"Inn barishon se dosti achhi nahi Zameer\nKaccha tera makaan hai kuch lihaaz toh kar\nBukhaar me bhi barsaat talaashta hai\nKuch der tham ja apna ilaaj toh kar"\n\nUski aamad saawan jaisi hai ay khair-khwah,\nVo barse main na bheegun, ye mumkin kahaan.\nTum ilaaj ki baat karte ho ay khair-khwah,\nJo ishq se katraaye, vo Momin kahaan.\n\n"Bheja tha tujhe jahaan dekhne ko aye Zameer,\nTu sirf ek chehre ko hi taakta reh gaya?"\n\nWo chaand si haseen thi, so chaand si door bhi,\nMain umr bhar faaslon ko hi naapta reh gaya.',
+        urdu: '"ان بارشوں سے دوستی اچھی نہیں ضمیر\nکچا تیرا مکان ہے کچھ لحاظ تو کر\nبخار میں بھی برسات تلاشتا ہے\nکچھ دیر تھم جا اپنا علاج تو کر"\n\nاس کی آمد ساون جیسی ہے اے خیر خواہ،\nوہ برسے میں نا بھیگوں، یہ ممکن کہاں۔\nتم علاج کی بات کرتے ہو اے خیر خواہ،\nجو عشق سے کترائے، وہ مومن کہاں۔\n\n"بھیجا تھا تجھے جہان دیکھنے کو اے ضمیر،\nتو صرف ایک چہرے کو ہی تاکتا رہ گیا?"\n\nوہ چاند سی حسین تھی، سو چاند سی دور بھی،\nمیں عمر بھر فاصلوں کو ہی ناپتا رہ گیا۔',
+      },
+    },
+    {
+      id:    "benaam-2",
+      title: "Benaam Nazm (Untitled)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        english: "To perceive beauty was no challenge to the eyes that pursue beauty\nTo be pleased with the distance was a plight like no other\nNow I passively pass out to an eternal paradigm\nMaybe we stay together in nothingness and call it paradise.\n\nBy lord, bedeviling is your beauty that bindweed us beyond blood.\nWhile vague were my attempts to vacate from your vicinity.\nI rendered myself ransacked.",
+      },
+    },
+    {
+      id:    "benaam-3",
+      title: "Benaam Nazm (बेनाम नज़्म / بے نام نظم)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        hindi: "जैसे तुझे आते हैं ना आने के बहाने;\nऐसा एक बहाने से ना जाने के लिए आ।\nजैसे बीच आते हैं हमारे प्यार के ये ज़माने;\nऐसा ज़माना छोड़ तू एक ज़माने के लिए आ।\n\nतेरी गैर-मौजूदगी से जो रूठा है दिल,\nइस रूठे दिल को मनाने के लिए आ।\nइन ज़ालिमों के शहर में अब मैं हकीर सा हो गया हूँ;\nइस हकीर से आदमी के सहारे के लिए आ।",
+        english: "Jaise tujhe aate hai na aane ke bahaane;\naisa ek bahaane se na jaane ke liye aa.\nJaise beech aate hai hamare pyaar ke ye zamaane;\naisa zamaana chodh tu ek zamaane ke liye aa.\n\nTeri gair-maujoodgi se jo rootha hai dil,\niss roothe dil ko manaane ke liye aa.\nIn zalimon ke sheher mein ab main hakeer sa ho gaya hoon;\niss hakeer se aadmi ke sahare ke liye aa.",
+        urdu: "جیسے تجھے آتے ہیں نا آنے کے بہانے؛\nایسا ایک بہانے سے نا جانے کے لیے آ۔\nجیسے بیچ آتے ہیں ہمارے پیار کے یہ زمانے؛\nایسا زمانہ چھوڑ تو ایک زمانے کے لیے آ۔\n\nتیری غیر موجودگی سے جو روٹھا ہے دل،\nاس روٹھے دل کو منانے کے لیے آ۔\nان ظالموں کے شہر میں اب میں حقیر سا ہو گیا ہوں؛\nاس حقیر سے آدمی کے سہارے کے لیے آ۔",
+      },
+    },
+    {
+      id:    "dilkashi",
+      title: "Dilkashi (दिलकशी / دلکشی)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        hindi: "कुछ लफ़्ज़ दबे हैं उन लबों के बीच\nतो आओ कुछ लम्हे उन लबों को आराम दूँ\nशरीक हुए शिद्दत से तुम्हारी शिरकत में\nअब कुछ शराबियों में मैं शुमार हूँ\n\nदिल-ए-मजरूह जो पर मासूम ठहरा\nबन बैठा तुम्हारा जो ये मकान यूँ\nबरहक तुम इसके बुनियाद भी तुम\nबिन तुम्हारे मैं बर्बाद हूँ",
+        english: "Kuch lafz dabe hain un labon ke beech\nToh aao kuch lamhe un labon ko aaram doon\nShareek hue shiddat se tumhari shirkat mein\nAb kuch sharabiyon mein main shumaar hoon\n\nDil-e-majrooh jo par masoom thehra\nBan baitha tumhara jo ye makaan yun\nBarhaq tum iske buniyaad bhi tum\nBin tumhare main barbaad hoon",
+        urdu: "کچھ لفظ دبے ہیں ان لبوں کے بیچ\nتو آؤ کچھ لمحے ان لبوں کو آرام دوں\nشریک ہوئے شدت سے تمہاری شرکت میں\nاب کچھ شرابیوں میں میں شمار ہوں\n\nدِل مجروح جو پر معصوم ٹھہرا\nبن بیٹھا تمہارا جو یہ مکان یوں\nبرحق تم اس کے بنیاد بھی تم\nبن تمہارے میں برباد ہوں",
+      },
+    },
+    {
+      id:    "benaam-4",
+      title: "Benaam Nazm (बेनाम नज़्म / بے نام نظم)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        hindi: "تلخ کردی ہے زندگی جس نے\nکتنی میٹھی زبان ہے پیارے\nجو تاکا کرتے تھے نگاہیں اسے\nاب وہ آنکھیں بے جان ہیں پیارے\n\nتل्ख़ करदी है ज़िंदगी जिसने\nकितनी मीठी ज़बान है प्यारे\nजो ताका करते थे निगाहें उसे\nअब वो आँखें बेजान हैं प्यारे\n\nउसकी ज़ुल्फ़ें पहली बरसात सी कोई\nतो आवाज़ मौसम सरमा की शाम है प्यारे\nजो शाम इस दिल पे ढल भी गई\nपर बेजान आँखें अनजान हैं प्यारे",
+        english: "Talkh kardi hai zindagi jisne\nKitni meethi zabaan hai pyaare\nJo taaka karte the nigahein usey\nAb wo aankhein bejaan hain pyaare\n\nUski zulfein pehli barsaat si koi\nToh aawaaz mausam sarma ki shaam hai pyaare\nJo shaam is dil pe dhal bhi gayi\nPar bejaan aankhein anjaan hain pyaare",
+        urdu: "تلخ کردی ہے زندگی جس نے\nکتنی میٹھی زبان ہے پیارے\nجو تاکا کرتے تھے نگاہیں اسے\nاب وہ آنکھیں بے جان ہیں پیارے\n\nاس کی زلفیں پہلی برسات سی کوئی\nتو آواز موسم سرما کی شام ہے پیارے\nجو شام اس دل پہ ڈھل بھی گئی\nپر بے جان آنکھیں انجان ہیں پیارے",
+      },
+    },
+    {
+      id:    "maut",
+      title: "Maut (मौत / موت)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        hindi: "तुम्हारे एक चाहने वाले का क़त्ल करने जा रहा हूँ\nपर तुम उसकी मय्यत पर नहीं आओगे\nके मेरे हाथ खून से रंगे होंगे\nऔर तुम एक कातिल के जनाज़े पर भला क्यों जाओगे\n\nअगर आओ तो देख लेना मुस्कुरा रहा होगा\nजब तुम अपना नक़ाब हटा अपना चेहरा दिखाओगे\nके एक मुर्दे को अपनी जन्नत का दीदार कर\nउसे तुम खिलखिलाता ही तो पाओगे",
+        english: "Tumhare ek chahne wale ka qatl karne ja raha hoon\nPar tum uski mayyat par nahi aaoge\nKe mere haath khoon se range honge\nAur tum ek kaatil ke janaze par bhala kyon jaoge\n\nAgar aao to dekh lena muskura raha hoga\nJab tum apna naqaab hata apna chehra dikhaoge\nKe ek murde ko apni jannat ka deedar kar\nUse tum khilkhilata hi to paoge",
+        urdu: "تمہارے ایک چاہنے والے کا قتل کرنے جا رہا ہوں\nپر تم اس کی میت پر نہیں آؤ گے\nکہ میرے ہاتھ خون سے رنگے ہوں گے\nاور تم ایک قاتل کے جنازے پر بھال کیوں جاؤ گے\n\nاگر آؤ تو دیکھ لینا مسکرا رہا ہوگا\nجب تم اپنا نقاب ہٹا اپنا چہرہ دکھاؤ گے\nکہ ایک مردے کو اپنی جنت کا دیدار کر\nاسے تم کھلکھالتا ہی تو پاؤ گے",
+      },
+    },
+    {
+      id:    "cannibal",
+      title: "Cannibal",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        english: "A cannibal I am,\nI devour my lovers' hearts.\nScatter their blood into a picture,\nThey say my love is art.\n\nI chew their brains and fear I not\nLest my pets shall bark,\nI swallow their fluids and tie their tongues\nAnd their cries resemble harps.\n\nI blind them into delusion\nTearing their awareness apart.\nMy fingers play them like piano\nAs my hands fondle their parts.\n\nIndeed a cannibal but I don't kill on sight\nThey die from poison my words impart.",
+      },
+    },
+    {
+      id:    "untitled",
+      title: "Untitled",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        english: "To perceive beauty was no challenge to the eyes that pursue beauty\nTo be pleased with the distance was a plight like no other\nNow I passively pass out to an eternal paradigm\nMaybe we stay together in nothingness and call it paradise.\n\nBy lord, bedeviling is your beauty that bindweed us beyond blood.\nWhile vague were my attempts to vacate from your vicinity.\nI rendered myself ransacked.",
+      },
+    },
+    {
+      id:    "benaam-5",
+      title: "Benaam Nazm (बेनाम नज़्म / بے نام نظم)",
+      penName: { urdu: "ضمیرفحش", english: "Zameer Fuhsh", hindi: "ज़मीर फुहश" },
+      text: {
+        hindi: "कुछ सवाल थे हमें उससे,\nहम उसके साए से पुछते रह गए।\nबड़े कमाल थे उसके वादे,\nउसके इरादे छिपकर रह गए\n\nवो झूठ भी क्या बख़ूबी कहती,\nहम दग़ा भी ख़ुशी-ख़ुशी सह गए।\nजवाब तो उसकी हरकतों में ही थे,\nहम उसकी बातों में ढूंढते रह गए।",
+        english: "Kuch sawal the humein usse,\nHum uske saaye se puchte reh gaye.\nBade kamaal the uske vaade,\nUske iraade chhipkar reh gaye\n\nWo jhooth bhi kya bakhoobi kehti,\nHum dagaa bhi khushi-khushi seh gaye.\nJawab toh uski harkaton me hi the,\nHum uski baaton mein dhoondhte reh gaye.",
+        urdu: "کچھ سوال تھے ہمیں اس سے،\nہم اس کے سائے سے پوچھتے رہ گئے۔\nبڑے کمال تھے اس کے وعدے،\nاس کے ارادے چھپ کر رہ گئے\n\nوہ جھوٹ بھی کیا بخوبی کہتی،\nہم دغا بھی خوشی خوشی سہ گئے۔\nجواب تو اس کی حرکتوں میں ہی تھے،\nہم اس کی باتوں میں ڈھونڈتے رہ گئے۔",
       },
     },
   ],
@@ -712,7 +803,7 @@ async function boot() {
 
 function renderHelp() {
   const cmds = [
-    'whoami', 'kz projects', 'kz poems', 'contact', 'simulate', 'history', 'clear', 'help'
+    'whoami', 'kz projects', 'kz poems', 'contact', 'simulate pendulum', 'simulate quantum', 'history', 'clear', 'help'
   ];
   const btns = cmds.map(c =>
     `<button class="cmd-btn" onclick="runCmd('${c}')">${c}</button>`
@@ -728,13 +819,46 @@ function renderHelp() {
 
 function renderWhoami() {
   const d = DATA.whoami;
+  const photo = `=============++=:.  .............:--====--=--=----
+===========++::  ...... ..   . ..:. :-=====-------
+===========-.    ..   ...... ..:.:.   -=====-=----
+===-=====-......... ..  . . .: ...   .::===--===--
+========-...  . ...           ...:  .. .-===-===--
+===--==-. .   .    .-+=.:-:. ..:........-==--=----
+=======-.. .  .:-=*%@@@%*+++*####+:  .::-==-------
+========:  .  .-#@@@@@@@@@@@@%##@#-     .==-------
+=--==-==:  ...:-++**#@@@@%#+--=+#%#:    :---------
+===----=: .  *%%#+-==*%%%*-+*-+*+*%+   :-------:--
+-=------=** -@%=+=:#**#%%**#%:===*%@ .##*:----:---
+===-==-:+%@ +@%%%%%%%%%%@%%%#%%%@@@%.-##+:-:::::::
+-----=---%%:=%%@@@@@@%%@@@@@@%%%%%%*-:+#::::::::::
+--------:*@@=%%%%%%@%*#%**##%%%%%##-+@%=.:::::::::
+---------:+%-*%%%%%%#*##*+##%%%###=.++:.::::::::::
+----------::::#%%%##*+***++**#%%#+. :.::::::::::::
+-------------.-*###*++***+++*##*=: :-:::::::::::::
+--------------::+%%###****####*=:=::::::::::::::::
+--------------=+-+#%%@@@@@%%#*=:+#::::::::::::::::
+------::-------##=-=++++====::=+#*::::::::::::::::
+------:-:----::*#%#+==------=+***#..::::::::::::::
+-:::::-::::::::*##%%#%%%%%##*****#+:.:  .::::::..:
+-----::..:-=*=+*###########**#****%%*+#=:   ..:::.
+::...:-=*%@@@++####%%#*###**#######%%#@@@@*-.   ..
+-:-+*%@@@%%%#%**#######****#**#####**@%@@@@@@%*-..
+#@@@%%##%#%%##%#*#####**####*####*+#@@%@@@%#@@@@@#
+%%%##%##%%%%%%%##*######%%%%#######%%@%%@%%%%@#%@@
+%%%##%%#%%%%%%%%###%#####%%%%%%%###%%%%%@%%%%%%%%%`;
   return `
     <div class="whoami-block">
-      <div class="whoami-row"><span class="whoami-key">name     </span><span class="whoami-val">${d.name}</span></div>
-      <div class="whoami-row"><span class="whoami-key">pronouns </span><span class="whoami-val" style="color:var(--dim);font-size:11px">${d.pronouns}</span></div>
-      <div class="whoami-row"><span class="whoami-key">about    </span><span class="whoami-val">${d.about}</span></div>
-      <div class="whoami-row"><span class="whoami-key">location </span><span class="whoami-val">${d.location}</span></div>
-      <div class="whoami-row"><span class="whoami-key">status   </span><span class="whoami-val" style="color:var(--yellow)">${d.status}</span></div>
+      <div class="whoami-layout">
+        <div class="whoami-photo"><pre class="photo-ascii">${photo}</pre></div>
+        <div class="whoami-info">
+          <div class="whoami-row"><span class="whoami-key">name     </span><span class="whoami-val">${d.name}</span></div>
+          <div class="whoami-row"><span class="whoami-key">pronouns </span><span class="whoami-val" style="color:var(--dim);font-size:11px">${d.pronouns}</span></div>
+          <div class="whoami-row"><span class="whoami-key">about    </span><span class="whoami-val">${d.about}</span></div>
+          <div class="whoami-row"><span class="whoami-key">location </span><span class="whoami-val">${d.location}</span></div>
+          <div class="whoami-row"><span class="whoami-key">status   </span><span class="whoami-val" style="color:var(--yellow)">${d.status}</span></div>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -794,19 +918,39 @@ function renderPoem(id) {
   const p = DATA.poems.find(x => x.id === id);
   if (!p) return `<span class="err">cat: ${escapeHtml(id)}: no such poem. run <span style="color:var(--accent)">kz poems</span> to list all.</span>`;
   const uid = 'poem-viewer-' + id + '-' + Date.now();
+  const hasUrdu    = !!p.text.urdu;
+  const hasEnglish = !!p.text.english;
+  const hasHindi   = !!p.text.hindi;
+  const langBtns = [
+    hasUrdu    ? `<button class="lang-btn" onclick="showPoemLang('${uid}', '${id}', 'urdu')">اردو</button>` : '',
+    hasEnglish ? `<button class="lang-btn" onclick="showPoemLang('${uid}', '${id}', 'english')">English</button>` : '',
+    hasHindi   ? `<button class="lang-btn" onclick="showPoemLang('${uid}', '${id}', 'hindi')">हिन्दी</button>` : '',
+  ].join('');
+  // If only one language, show it directly
+  const onlyLang = [hasUrdu && 'urdu', hasEnglish && 'english', hasHindi && 'hindi'].filter(Boolean);
+  if (onlyLang.length === 1) {
+    const lang = onlyLang[0];
+    const cssClass = lang === 'urdu' ? 'poem-text-ur' : lang === 'hindi' ? 'poem-text-hi' : 'poem-text-en';
+    const penName = p.penName ? p.penName[lang] || p.penName.english : '';
+    return `
+      <div>
+        <div style="color:var(--purple);font-size:14px;font-weight:500;margin-bottom:2px">${escapeHtml(p.title)}</div>
+        <div class="poem-viewer" style="margin-top:10px">
+          <div class="${cssClass}">${escapeHtml(p.text[lang])}</div>
+          ${penName ? `<div style="color:var(--dim);font-size:12px;margin-top:14px;text-align:right">— ${escapeHtml(penName)}</div>` : ''}
+        </div>
+      </div>`;
+  }
   return `
     <div>
       <div style="color:var(--purple);font-size:14px;font-weight:500;margin-bottom:2px">${escapeHtml(p.title)}</div>
-      <div class="muted" style="margin-bottom:12px">${escapeHtml(p.date)}</div>
+      <div class="muted" style="margin-bottom:12px;font-size:11px">available in ${onlyLang.length} languages</div>
       <div class="lang-prompt">select language to read:</div>
-      <div class="lang-btns" id="${uid}-btns">
-        <button class="lang-btn" onclick="showPoemLang('${uid}', '${id}', 'urdu')">اردو</button>
-        <button class="lang-btn" onclick="showPoemLang('${uid}', '${id}', 'english')">English</button>
-        <button class="lang-btn" onclick="showPoemLang('${uid}', '${id}', 'hindi')">हिन्दी</button>
-      </div>
+      <div class="lang-btns" id="${uid}-btns">${langBtns}</div>
       <div id="${uid}"></div>
     </div>`;
 }
+
 
 function showPoemLang(uid, poemId, lang) {
   const p = DATA.poems.find(x => x.id === poemId);
@@ -814,14 +958,14 @@ function showPoemLang(uid, poemId, lang) {
   const text = p.text[lang] || '';
   const labels = { urdu: 'اردو', english: 'English', hindi: 'हिन्दी' };
   const cssClass = lang === 'urdu' ? 'poem-text-ur' : lang === 'hindi' ? 'poem-text-hi' : 'poem-text-en';
+  const penName = p.penName ? p.penName[lang] || p.penName.english : '';
   const container = document.getElementById(uid);
   if (!container) return;
   container.innerHTML = `
     <div class="poem-viewer">
-      <div class="poem-lang-label">${labels[lang]}</div>
       <div class="${cssClass}">${escapeHtml(text)}</div>
+      ${penName ? `<div style="color:var(--dim);font-size:12px;margin-top:14px;text-align:${lang === 'urdu' ? 'left' : 'right'}">— ${escapeHtml(penName)}</div>` : ''}
     </div>`;
-  // Highlight active button
   const btnsEl = document.getElementById(uid + '-btns');
   if (btnsEl) {
     btnsEl.querySelectorAll('.lang-btn').forEach(b => {
@@ -940,6 +1084,152 @@ function stopSimulate() {
   document.getElementById('sim-stop')?.remove();
 }
 
+// ─── QUANTUM BILLIARDS SIMULATION ────────────────────────────────────────────
+
+function startQuantum() {
+  if (simInterval) clearInterval(simInterval);
+
+  const uid = 'quantum-' + Date.now();
+  const html = `
+    <div id="sim-container">
+      <div class="muted" style="margin-bottom:6px">quantum billiards — particle in a 2D box — wavefunction |ψ|²</div>
+      <canvas id="${uid}" width="420" height="280" style="display:block;border:1px solid var(--border);border-radius:4px;max-width:100%"></canvas>
+      <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button id="sim-stop" onclick="stopSimulate()" style="background:transparent;border:1px solid var(--red);color:var(--red);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 12px;border-radius:3px;cursor:pointer">■ stop</button>
+        <span class="muted" style="font-size:11px" id="${uid}-info">nx=1 ny=1  E=2</span>
+      </div>
+    </div>`;
+
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  output.appendChild(el);
+  scrollBottom();
+
+  const canvas = document.getElementById(uid);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const info = document.getElementById(uid + '-info');
+
+  // Superposition of quantum states — time evolving
+  // |ψ(x,y,t)|² = |Σ c_nm ψ_nm(x,y) e^{-iE_nm t}|²
+  const states = [
+    { nx: 1, ny: 1, c: 0.6 },
+    { nx: 2, ny: 1, c: 0.5 },
+    { nx: 1, ny: 2, c: 0.5 },
+    { nx: 2, ny: 2, c: 0.3 },
+    { nx: 3, ny: 1, c: 0.2 },
+  ];
+  // Normalize
+  const norm = Math.sqrt(states.reduce((s, st) => s + st.c * st.c, 0));
+  states.forEach(st => st.c /= norm);
+
+  // Precompute spatial parts on a grid
+  const GW = 84, GH = 56;
+  const psi_spatial = states.map(st => {
+    const arr = new Float32Array(GW * GH);
+    for (let j = 0; j < GH; j++) {
+      for (let i = 0; i < GW; i++) {
+        const x = (i + 1) / (GW + 1);
+        const y = (j + 1) / (GH + 1);
+        arr[j * GW + i] = Math.sin(st.nx * Math.PI * x) * Math.sin(st.ny * Math.PI * y);
+      }
+    }
+    return arr;
+  });
+
+  // Energies E_nm = nx^2 + ny^2
+  states.forEach(st => { st.E = st.nx * st.nx + st.ny * st.ny; });
+
+  // Theme colors — amber gradient matching dark-matter theme
+  function probToColor(p) {
+    // p in [0,1]
+    if (p < 0.2) {
+      const t = p / 0.2;
+      return [Math.round(13 + t * 20), Math.round(15 + t * 18), Math.round(20 + t * 25)];
+    } else if (p < 0.5) {
+      const t = (p - 0.2) / 0.3;
+      return [Math.round(33 + t * 100), Math.round(33 + t * 50), Math.round(45 + t * 10)];
+    } else if (p < 0.8) {
+      const t = (p - 0.5) / 0.3;
+      return [Math.round(133 + t * 87), Math.round(83 + t * 60), Math.round(55 - t * 20)];
+    } else {
+      const t = (p - 0.8) / 0.2;
+      return [Math.round(220 + t * 35), Math.round(143 + t * 80), Math.round(35 + t * 100)];
+    }
+  }
+
+  const imageData = ctx.createImageData(W, H);
+  let t = 0;
+
+  // Update quantum state info display
+  let frame = 0;
+
+  simInterval = setInterval(() => {
+    t += 0.04;
+    frame++;
+
+    const prob = new Float32Array(GW * GH);
+    // Compute |ψ|² = |Σ c_nm ψ_nm e^{-iE t}|²
+    // Re and Im parts
+    const re = new Float32Array(GW * GH);
+    const im = new Float32Array(GW * GH);
+
+    for (let s = 0; s < states.length; s++) {
+      const st = states[s];
+      const phase = st.E * t;
+      const cosP = Math.cos(phase) * st.c;
+      const sinP = Math.sin(phase) * st.c;
+      const sp = psi_spatial[s];
+      for (let k = 0; k < GW * GH; k++) {
+        re[k] += cosP * sp[k];
+        im[k] += sinP * sp[k];
+      }
+    }
+
+    let maxP = 0;
+    for (let k = 0; k < GW * GH; k++) {
+      prob[k] = re[k] * re[k] + im[k] * im[k];
+      if (prob[k] > maxP) maxP = prob[k];
+    }
+
+    // Render to canvas with bilinear upscale
+    const scaleX = W / GW, scaleY = H / GH;
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const gx = px / scaleX, gy = py / scaleY;
+        const gxi = Math.min(Math.floor(gx), GW - 2);
+        const gyi = Math.min(Math.floor(gy), GH - 2);
+        const fx = gx - gxi, fy = gy - gyi;
+        const p00 = prob[gyi * GW + gxi];
+        const p10 = prob[gyi * GW + gxi + 1];
+        const p01 = prob[(gyi + 1) * GW + gxi];
+        const p11 = prob[(gyi + 1) * GW + gxi + 1];
+        const p = (p00 * (1-fx) * (1-fy) + p10 * fx * (1-fy) +
+                   p01 * (1-fx) * fy    + p11 * fx * fy) / maxP;
+        const [r, g, b] = probToColor(Math.min(p, 1));
+        const idx = (py * W + px) * 4;
+        imageData.data[idx]     = r;
+        imageData.data[idx + 1] = g;
+        imageData.data[idx + 2] = b;
+        imageData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // Draw nodal lines hint
+    ctx.strokeStyle = 'rgba(224,123,57,0.15)';
+    ctx.lineWidth = 0.5;
+
+    // Update info periodically
+    if (frame % 30 === 0) {
+      const dominant = states.reduce((a, b) =>
+        Math.abs(Math.cos(b.E * t)) * b.c > Math.abs(Math.cos(a.E * t)) * a.c ? b : a
+      );
+      if (info) info.textContent = `superposition of ${states.length} eigenstates  |  t = ${t.toFixed(2)}  |  E_dominant = ${dominant.E}`;
+    }
+  }, 50);
+}
+
 // ─── COMMAND PROCESSOR ───────────────────────────────────────────────────────
 
 async function runCmd(raw) {
@@ -970,11 +1260,22 @@ async function runCmd(raw) {
     output.innerHTML = '';
     await appendHTML(renderHelp());
     return;
-  } else if (cmd === 'simulate') {
+  } else if (cmd === 'simulate pendulum') {
     await appendHTML('</div></div>');
     startSimulate();
     cmdInput.value = '';
     return;
+  } else if (cmd === 'simulate quantum') {
+    await appendHTML('</div></div>');
+    startQuantum();
+    cmdInput.value = '';
+    return;
+  } else if (cmd === 'simulate') {
+    responseHTML = `<span class="info">specify a simulation:<br><br></span>` +
+      `<div class="help-grid">` +
+      `<button class="cmd-btn" onclick="runCmd('simulate pendulum')">simulate pendulum</button>` +
+      `<button class="cmd-btn" onclick="runCmd('simulate quantum')">simulate quantum</button>` +
+      `</div>`;
   } else if (cmd.startsWith('sudo')) {
     responseHTML = renderSudo(cmd.slice(4).trim());
   } else if (cmd.startsWith('cat ')) {
@@ -1017,7 +1318,7 @@ cmdInput.addEventListener('keydown', e => {
     e.preventDefault();
     // Basic autocomplete
     const val = cmdInput.value.toLowerCase();
-    const all = ['whoami','kz projects','kz poems','contact','simulate','history','clear','help','sudo'];
+    const all = ['whoami','kz projects','kz poems','contact','simulate pendulum','simulate quantum','history','clear','help','sudo'];
     const match = all.find(c => c.startsWith(val));
     if (match) cmdInput.value = match;
   }
