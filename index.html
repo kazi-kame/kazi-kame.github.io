@@ -709,9 +709,10 @@ const DATA = {
 
   contact: {
     github:    "https://github.com/kazi-kame",
-    email:     "[your-email@domain.com]",
-    instagram: "[your instagram handle]",
-    linkedin:  "[your linkedin url]",
+    email_work:     "26f1000863@ds.study.iitm.ac.in",
+    email_personal: "kazi80085@gmail.com",
+    instagram: "https://www.instagram.com/sircussesalot/",
+    linkedin:  "https://www.linkedin.com/in/kazibest/",
   },
 
   // ── EDIT SUDO ROASTS HERE ──────────────────────────────────────────────────
@@ -987,8 +988,9 @@ function renderContact() {
   return `
     <div style="margin-top:4px">
       <div class="contact-row"><span class="contact-label">github</span><span class="contact-val"><a href="${c.github}" target="_blank">${c.github}</a></span></div>
-      <div class="contact-row"><span class="contact-label">email</span><span class="contact-val"><a href="mailto:${c.email}">${c.email}</a></span></div>
-      <div class="contact-row"><span class="contact-label">instagram</span><span class="contact-val">${escapeHtml(c.instagram)}</span></div>
+      <div class="contact-row"><span class="contact-label">email (work)</span><span class="contact-val"><a href="mailto:${c.email_work}">${c.email_work}</a></span></div>
+      <div class="contact-row"><span class="contact-label">email (personal)</span><span class="contact-val"><a href="mailto:${c.email_personal}">${c.email_personal}</a></span></div>
+      <div class="contact-row"><span class="contact-label">instagram</span><span class="contact-val"><a href="${c.instagram}" target="_blank">${c.instagram}</a></span></div>
       <div class="contact-row"><span class="contact-label">linkedin</span><span class="contact-val"><a href="${c.linkedin}" target="_blank">${c.linkedin}</a></span></div>
     </div>`;
 }
