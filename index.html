@@ -528,7 +528,7 @@
       <div class="dot yellow"></div>
       <div class="dot green"></div>
     </div>
-    <div class="titlebar-text">kami-kazi@random — terminal portfolio</div>
+    <div class="titlebar-text">kami-kazi@chaos — terminal portfolio</div>
     <div class="theme-switcher">
       <div class="theme-btn t-dark"   title="dark matter" onclick="setTheme('dark-matter')"></div>
       <div class="theme-btn t-plasma" title="plasma"      onclick="setTheme('plasma')"></div>
@@ -544,11 +544,7 @@
   <!-- INPUT BAR -->
   <div class="input-area">
     <div class="input-prompt">
-      <span class="prompt-user">kami-kazi</span>
-      <span class="prompt-at">@</span>
-      <span class="prompt-host">chaos</span>
-      <span class="prompt-path">:~</span>
-      <span class="prompt-sym">$</span>
+      <span class="prompt-sym">></span>
     </div>
     <input id="cmd-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="type a command or click one above..."/>
     <span class="cursor"></span>
@@ -717,15 +713,11 @@ const DATA = {
 
   // ── EDIT SUDO ROASTS HERE ──────────────────────────────────────────────────
   sudoRoasts: [
+    "nice try.\nalso you spelled 'befriend' wrong.",
+    "this is chaos territory. nothing gets deleted,\nit just becomes unpredictable.",
+    "sudo: permission denied.\nthis system obeys no one — not even its owner.",
     "error: elevated privileges require understanding randomness first.\nhave you tried `kz projects`?",
-    "nice try.\nalso you spelled 'I like hairy middle aged men' wrong.",
-    "Fak U",
-    "You wish",
-    "Get a life",
-    "The N Word (no)",
-    "I miss you Rashika <3",
-    "suckanigadick",
-    "Access Denied; bend over and spread your cheaks",
+    "you cannot sudo chaos.\nchaos sudos you.",
   ],
 };
 
@@ -790,6 +782,7 @@ async function boot() {
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝      ╚═╝  ╚═╝╚═╝  ╚═╝ ══════╝ ╚═╝</div>
         <div class="welcome-name">Kami-Kazi</div>
         <div class="pronouns">ILove/MyGirlfriend</div>
+        <div class="welcome-sub">Physics student. I like studying randomness.</div>
       </div>`, delay: 900 },
     { html: `<div class="boot-line" style="animation-delay:1.1s"><br><hr class="divider"></div>`, delay: 1100 },
     { html: `<div class="boot-line" style="animation-delay:1.3s"><span class="muted">Type a command or click one below. Try <span style="color:var(--accent)">help</span> to start.</span><br><br></div>`, delay: 1300 },
