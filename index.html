@@ -7,24 +7,42 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=Departure+Mono&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #0d0f14;
-      --bg2: #12151c;
-      --surface: #181c25;
-      --border: #232836;
-      --text: #cdd6f4;
-      --dim: #6c7086;
-      --accent: #e07b39;
-      --accent2: #f0a868;
-      --green: #a6e3a1;
-      --red: #f38ba8;
-      --blue: #89b4fa;
-      --yellow: #f9e2af;
-      --purple: #cba6f7;
-      --prompt: #e07b39;
-      --cursor: #e07b39;
+      --bg: #0a0a0a;
+      --bg2: #0d0d0d;
+      --surface: #111411;
+      --border: #1a2a1a;
+      --text: #00ff41;
+      --dim: #1f5c1f;
+      --accent: #00ff41;
+      --accent2: #00cc33;
+      --green: #00ff41;
+      --red: #ff3366;
+      --blue: #00ffff;
+      --yellow: #ffff00;
+      --purple: #cc00ff;
+      --prompt: #00ff41;
+      --cursor: #00ff41;
+      --glow: 0 0 8px #00ff41, 0 0 16px rgba(0,255,65,0.4);
+      --glow-dim: 0 0 4px rgba(0,255,65,0.3);
     }
 
-    /* DARK MATTER THEME */
+    /* PHOSPHOR — default cyberpunk green */
+    [data-theme="phosphor"] {
+      --bg: #0a0a0a;
+      --bg2: #0d0d0d;
+      --surface: #111411;
+      --border: #1a2a1a;
+      --text: #00ff41;
+      --dim: #1f5c1f;
+      --accent: #00ff41;
+      --accent2: #00cc33;
+      --prompt: #00ff41;
+      --cursor: #00ff41;
+      --glow: 0 0 8px #00ff41, 0 0 16px rgba(0,255,65,0.4);
+      --glow-dim: 0 0 4px rgba(0,255,65,0.3);
+    }
+
+    /* DARK MATTER */
     [data-theme="dark-matter"] {
       --bg: #0d0f14;
       --bg2: #12151c;
@@ -36,23 +54,27 @@
       --accent2: #f0a868;
       --prompt: #e07b39;
       --cursor: #e07b39;
+      --glow: none;
+      --glow-dim: none;
     }
 
-    /* PLASMA THEME */
-    [data-theme="plasma"] {
-      --bg: #0a0a12;
-      --bg2: #0f0f1a;
-      --surface: #14142a;
-      --border: #1e1e3a;
-      --text: #e0e0ff;
-      --dim: #5a5a8a;
-      --accent: #7c6af7;
-      --accent2: #a99eff;
-      --prompt: #7c6af7;
-      --cursor: #a99eff;
+    /* NEO — cyberpunk purple/cyan */
+    [data-theme="neo"] {
+      --bg: #06050f;
+      --bg2: #0a0818;
+      --surface: #0f0c20;
+      --border: #1a1535;
+      --text: #00ffff;
+      --dim: #2a1a5a;
+      --accent: #cc00ff;
+      --accent2: #00ffff;
+      --prompt: #cc00ff;
+      --cursor: #00ffff;
+      --glow: 0 0 8px #cc00ff, 0 0 16px rgba(204,0,255,0.4);
+      --glow-dim: 0 0 4px rgba(0,255,255,0.3);
     }
 
-    /* CHALKBOARD THEME */
+    /* CHALKBOARD */
     [data-theme="chalkboard"] {
       --bg: #1a2b1a;
       --bg2: #1f301f;
@@ -64,6 +86,8 @@
       --accent2: #a8e878;
       --prompt: #7ec850;
       --cursor: #7ec850;
+      --glow: none;
+      --glow-dim: none;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,11 +116,24 @@
         0deg,
         transparent,
         transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
       );
       pointer-events: none;
       z-index: 999;
+    }
+
+    /* CRT VIGNETTE */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center,
+        transparent 60%,
+        rgba(0,0,0,0.5) 100%
+      );
+      pointer-events: none;
+      z-index: 998;
     }
 
     /* TERMINAL WINDOW */
@@ -114,12 +151,13 @@
     /* TITLEBAR */
     .titlebar {
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--accent);
       padding: 12px 16px;
       display: flex;
       align-items: center;
       gap: 12px;
       user-select: none;
+      box-shadow: 0 1px 12px rgba(0,255,65,0.1);
     }
 
     .dots { display: flex; gap: 7px; }
@@ -134,9 +172,11 @@
     .titlebar-text {
       flex: 1;
       text-align: center;
-      color: var(--dim);
+      color: var(--accent);
       font-size: 12px;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
+      text-shadow: var(--glow-dim);
+      text-transform: lowercase;
     }
 
     .theme-switcher {
@@ -152,9 +192,10 @@
       transition: transform 0.15s, border-color 0.15s;
     }
     .theme-btn:hover { transform: scale(1.3); border-color: var(--text); }
-    .theme-btn.t-dark    { background: #e07b39; }
-    .theme-btn.t-plasma  { background: #7c6af7; }
-    .theme-btn.t-chalk   { background: #7ec850; }
+    .theme-btn.t-phosphor { background: #00ff41; box-shadow: 0 0 6px #00ff41; }
+    .theme-btn.t-dark     { background: #e07b39; }
+    .theme-btn.t-neo      { background: #cc00ff; box-shadow: 0 0 6px #cc00ff; }
+    .theme-btn.t-chalk    { background: #7ec850; }
 
     /* OUTPUT AREA */
     .output {
@@ -166,7 +207,7 @@
 
     .output::-webkit-scrollbar { width: 4px; }
     .output::-webkit-scrollbar-track { background: transparent; }
-    .output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .output::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; box-shadow: var(--glow-dim); }
 
     /* BOOT SEQUENCE */
     .boot-line {
@@ -181,6 +222,7 @@
       line-height: 1.2;
       white-space: pre;
       margin-bottom: 8px;
+      text-shadow: var(--glow);
     }
 
     .welcome-name {
@@ -188,6 +230,7 @@
       font-weight: 700;
       color: var(--accent);
       letter-spacing: 0.08em;
+      text-shadow: var(--glow);
     }
 
     .pronouns {
@@ -219,11 +262,11 @@
       margin-bottom: 6px;
     }
 
-    .prompt-user { color: var(--accent); font-weight: 500; }
+    .prompt-user { color: var(--accent); font-weight: 500; text-shadow: var(--glow-dim); }
     .prompt-at   { color: var(--dim); }
-    .prompt-host { color: var(--accent2); font-weight: 500; }
+    .prompt-host { color: var(--accent2); font-weight: 500; text-shadow: var(--glow-dim); }
     .prompt-path { color: var(--blue); }
-    .prompt-sym  { color: var(--dim); margin-right: 4px; }
+    .prompt-sym  { color: var(--accent); margin-right: 4px; text-shadow: var(--glow-dim); font-weight: 700; }
     .cmd-text    { color: var(--text); }
 
     .cmd-output { padding-left: 0; }
@@ -398,12 +441,13 @@
 
     /* INPUT BAR */
     .input-area {
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--accent);
       background: var(--surface);
       padding: 14px 28px;
       display: flex;
       align-items: center;
       gap: 8px;
+      box-shadow: 0 -1px 12px rgba(0,255,65,0.08);
     }
 
     .input-prompt {
@@ -435,8 +479,12 @@
       animation: blink 1s step-end infinite;
       vertical-align: text-bottom;
       margin-left: 2px;
+      box-shadow: var(--glow);
     }
-    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes blink {
+      0%, 100% { opacity: 1; box-shadow: var(--glow); }
+      50% { opacity: 0; box-shadow: none; }
+    }
 
     /* PHOTO ASCII */
     .photo-ascii {
@@ -484,12 +532,15 @@
 
     /* SECTION LABEL */
     .section-label {
-      color: var(--dim);
+      color: var(--accent);
       font-size: 11px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       margin-bottom: 8px;
       margin-top: 4px;
+      text-shadow: var(--glow-dim);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
     }
 
     /* SIMULATE PANEL */
@@ -518,7 +569,7 @@
     }
   </style>
 </head>
-<body data-theme="dark-matter">
+<body data-theme="phosphor">
 
 <div class="terminal">
   <!-- TITLEBAR -->
@@ -530,9 +581,10 @@
     </div>
     <div class="titlebar-text">kami-kazi@random — terminal portfolio</div>
     <div class="theme-switcher">
-      <div class="theme-btn t-dark"   title="dark matter" onclick="setTheme('dark-matter')"></div>
-      <div class="theme-btn t-plasma" title="plasma"      onclick="setTheme('plasma')"></div>
-      <div class="theme-btn t-chalk"  title="chalkboard"  onclick="setTheme('chalkboard')"></div>
+      <div class="theme-btn t-phosphor" title="phosphor"    onclick="setTheme('phosphor')"></div>
+      <div class="theme-btn t-dark"    title="dark matter" onclick="setTheme('dark-matter')"></div>
+      <div class="theme-btn t-neo"     title="neo"         onclick="setTheme('neo')"></div>
+      <div class="theme-btn t-chalk"   title="chalkboard"  onclick="setTheme('chalkboard')"></div>
     </div>
   </div>
 
@@ -544,7 +596,11 @@
   <!-- INPUT BAR -->
   <div class="input-area">
     <div class="input-prompt">
-      <span class="prompt-sym">></span>
+      <span class="prompt-user">kami-kazi</span>
+      <span class="prompt-at">@</span>
+      <span class="prompt-host">chaos</span>
+      <span class="prompt-path">:~</span>
+      <span class="prompt-sym">$</span>
     </div>
     <input id="cmd-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="type a command or click one above..."/>
     <span class="cursor"></span>
@@ -603,6 +659,14 @@ const DATA = {
       tags:  ["Python", "Signal Processing", "System ID", "Adaptive Filters"],
       url:   "https://github.com/kazi-kame/rlsvf-time-varying-system-identification",
       runnable: false,
+    },
+    {
+      id:    "mandelwalk",
+      title: "MandelWalk",
+      desc:  "Interactive Mandelbrot set explorer. Navigate the boundary of chaos — infinite complexity from a simple iteration.",
+      tags:  ["Python", "Fractals", "Chaos Theory", "Visualization"],
+      url:   "https://github.com/kazi-kame/mandelwalk",
+      runnable: true,
     },
   ],
 
@@ -775,15 +839,16 @@ async function boot() {
     { html: `<div class="boot-line" style="animation-delay:0.3s"><span class="muted">loading chaos modules... <span class="ok">ok</span></span></div>`, delay: 300 },
     { html: `<div class="boot-line" style="animation-delay:0.5s"><span class="muted">mounting phase space... <span class="ok">ok</span></span></div>`, delay: 500 },
     { html: `<div class="boot-line" style="animation-delay:0.7s"><br></div>`, delay: 700 },
+    { html: `<div class="boot-line" style="animation-delay:0.8s;color:var(--accent);font-size:11px;opacity:0.4;letter-spacing:0.2em">// INITIALIZING KAMI-KAZI TERMINAL v2.0 ...</div>`, delay: 800 },
     { html: `
       <div class="boot-line" style="animation-delay:0.9s">
         <div class="ascii-art">
-        ██╗  ██╗ █████╗ ███╗   ███╗██╗      ██╗  ██╗ █████╗ ███████╗ ██╗
- ██║ ██╔╝██╔══██╗████╗ ████║██║      ██║ ██╔╝██╔══██╗╚════██║ ██║
- █████╔╝ ███████║██╔████╔██║██║█████╗█████╔╝ ███████║    ██╔╝ ██║
- ██╔═██╗ ██╔══██║██║╚██╔╝██║██║╚════╝██╔═██╗ ██╔══██║  ██╔╝   ██║
- ██║  ██╗██║  ██║██║ ╚═╝ ██║██║      ██║  ██╗██║  ██║ ██████║ ██║
- ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝      ╚═╝  ╚═╝╚═╝  ╚═╝ ══════╝ ╚═╝</div>
+██╗  ██╗ █████╗ ███╗   ███╗██╗    ██╗  ██╗ █████╗ ███████╗██╗
+██║ ██╔╝██╔══██╗████╗ ████║██║    ██║ ██╔╝██╔══██╗╚════██║██║
+█████╔╝ ███████║██╔████╔██║██║    █████╔╝ ███████║    ██╔╝██║
+██╔═██╗ ██╔══██║██║╚██╔╝██║██║    ██╔═██╗ ██╔══██║   ██╔╝ ██║
+██║  ██╗██║  ██║██║ ╚═╝ ██║██║    ██║  ██╗██║  ██║   ██║  ██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝    ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝  ╚═╝</div>
         <div class="welcome-name">Kami-Kazi</div>
         <div class="pronouns">ILove/MyGirlfriend</div>
       </div>`, delay: 900 },
@@ -803,7 +868,7 @@ async function boot() {
 
 function renderHelp() {
   const cmds = [
-    'whoami', 'kz projects', 'kz poems', 'contact', 'simulate pendulum', 'simulate quantum', 'history', 'clear', 'help'
+    'whoami', 'kz projects', 'kz poems', 'contact', 'simulate pendulum', 'simulate quantum', 'simulate mandelbrot', 'history', 'clear', 'help'
   ];
   const btns = cmds.map(c =>
     `<button class="cmd-btn" onclick="runCmd('${c}')">${c}</button>`
@@ -1034,11 +1099,11 @@ function startSimulate() {
     t += 0.06;
 
     // Simplified double pendulum kinematics (visual only)
-    const a1 = Math.PI / 2.2 + Math.sin(t * 0.7) * 1.2 + Math.sin(t * 1.3) * 0.4;
-    const a2 = Math.PI / 1.8 + Math.sin(t * 1.1 + 1) * 1.5 + Math.sin(t * 0.5) * 0.8;
+    const a1 = Math.sin(t * 0.7) * 1.2 + Math.sin(t * 1.3) * 0.4;
+    const a2 = Math.sin(t * 1.1 + 1) * 1.5 + Math.sin(t * 0.5) * 0.8;
 
     const L1 = 7, L2 = 6;
-    const ox = Math.floor(W / 2), oy = 3;
+    const ox = Math.floor(W / 2), oy = 2;
 
     const x1 = ox + Math.round(L1 * Math.sin(a1));
     const y1 = oy + Math.round(L1 * Math.cos(a1));
@@ -1077,6 +1142,7 @@ function startSimulate() {
     canvas.textContent = rows.join('\n') + `\n\nλ (lyapunov) ≈ ${lyap}   t = ${t.toFixed(2)}s`;
   }, 80);
 }
+
 function stopSimulate() {
   if (simInterval) { clearInterval(simInterval); simInterval = null; }
   const sc = document.getElementById('sim-container');
@@ -1230,6 +1296,110 @@ function startQuantum() {
   }, 50);
 }
 
+// ─── MANDELBROT SIMULATION ───────────────────────────────────────────────────
+
+function startMandelbrot() {
+  if (simInterval) clearInterval(simInterval);
+
+  const uid = 'mandel-' + Date.now();
+  const html = `
+    <div id="sim-container">
+      <div class="muted" style="margin-bottom:6px">mandelbrot set — zooming into the boundary of chaos</div>
+      <canvas id="${uid}" width="420" height="280" style="display:block;border:1px solid var(--border);border-radius:4px;max-width:100%"></canvas>
+      <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button id="sim-stop" onclick="stopSimulate()" style="background:transparent;border:1px solid var(--red);color:var(--red);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 12px;border-radius:3px;cursor:pointer">■ stop</button>
+        <span class="muted" style="font-size:11px" id="${uid}-info">zoom: 1x</span>
+      </div>
+    </div>`;
+
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  output.appendChild(el);
+  scrollBottom();
+
+  const canvas = document.getElementById(uid);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const info = document.getElementById(uid + '-info');
+  const imageData = ctx.createImageData(W, H);
+
+  // Zoom target — a beautiful spiral on the Mandelbrot boundary
+  const targetX = -0.7435669;
+  const targetY =  0.1314023;
+
+  let zoom     = 1.0;
+  let frame    = 0;
+  const MAX_ITER = 128;
+
+  function iterateMandelbrot(cx, cy) {
+    let x = 0, y = 0, i = 0;
+    while (x*x + y*y <= 4 && i < MAX_ITER) {
+      const xt = x*x - y*y + cx;
+      y = 2*x*y + cy;
+      x = xt;
+      i++;
+    }
+    return i;
+  }
+
+  function iterToColor(i) {
+    if (i === MAX_ITER) return [13, 15, 20]; // inside set — deep dark
+    // Smooth coloring mapped to amber palette
+    const t = i / MAX_ITER;
+    if (t < 0.15) {
+      const s = t / 0.15;
+      return [Math.round(13 + s * 25), Math.round(15 + s * 20), Math.round(20 + s * 40)];
+    } else if (t < 0.4) {
+      const s = (t - 0.15) / 0.25;
+      return [Math.round(38 + s * 120), Math.round(35 + s * 60), Math.round(60 - s * 20)];
+    } else if (t < 0.7) {
+      const s = (t - 0.4) / 0.3;
+      return [Math.round(158 + s * 62), Math.round(95 + s * 48), Math.round(40 - s * 10)];
+    } else {
+      const s = (t - 0.7) / 0.3;
+      return [Math.round(220 + s * 35), Math.round(143 + s * 90), Math.round(30 + s * 120)];
+    }
+  }
+
+  // Render one frame at current zoom
+  function renderFrame() {
+    const scale = 3.0 / zoom;
+    const xMin = targetX - scale * (W / H) / 2;
+    const yMin = targetY - scale / 2;
+    const xStep = scale * (W / H) / W;
+    const yStep = scale / H;
+
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const cx = xMin + px * xStep;
+        const cy = yMin + py * yStep;
+        const i  = iterateMandelbrot(cx, cy);
+        const [r, g, b] = iterToColor(i);
+        const idx = (py * W + px) * 4;
+        imageData.data[idx]     = r;
+        imageData.data[idx + 1] = g;
+        imageData.data[idx + 2] = b;
+        imageData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  // Render first frame immediately
+  renderFrame();
+
+  simInterval = setInterval(() => {
+    zoom *= 1.015; // slow steady zoom
+    frame++;
+    renderFrame();
+    if (info && frame % 10 === 0) {
+      info.textContent = `zoom: ${zoom.toFixed(1)}x  |  center: (${targetX}, ${targetY})`;
+    }
+    // Reset zoom after deep dive to loop
+    if (zoom > 50000) zoom = 1.0;
+  }, 60);
+}
+
 // ─── COMMAND PROCESSOR ───────────────────────────────────────────────────────
 
 async function runCmd(raw) {
@@ -1270,11 +1440,17 @@ async function runCmd(raw) {
     startQuantum();
     cmdInput.value = '';
     return;
+  } else if (cmd === 'simulate mandelbrot') {
+    await appendHTML('</div></div>');
+    startMandelbrot();
+    cmdInput.value = '';
+    return;
   } else if (cmd === 'simulate') {
     responseHTML = `<span class="info">specify a simulation:<br><br></span>` +
       `<div class="help-grid">` +
       `<button class="cmd-btn" onclick="runCmd('simulate pendulum')">simulate pendulum</button>` +
       `<button class="cmd-btn" onclick="runCmd('simulate quantum')">simulate quantum</button>` +
+      `<button class="cmd-btn" onclick="runCmd('simulate mandelbrot')">simulate mandelbrot</button>` +
       `</div>`;
   } else if (cmd.startsWith('sudo')) {
     responseHTML = renderSudo(cmd.slice(4).trim());
@@ -1293,6 +1469,7 @@ async function runCmd(raw) {
   cmdInput.value = '';
   scrollBottom();
 }
+
 // ─── INPUT HANDLING ───────────────────────────────────────────────────────────
 
 cmdInput.addEventListener('keydown', e => {
@@ -1314,11 +1491,10 @@ cmdInput.addEventListener('keydown', e => {
       cmdInput.value = '';
     }
   } else if (e.key === 'Tab') {
-  } else if (e.key === 'Tab') {
     e.preventDefault();
     // Basic autocomplete
     const val = cmdInput.value.toLowerCase();
-    const all = ['whoami','kz projects','kz poems','contact','simulate pendulum','simulate quantum','history','clear','help','sudo'];
+    const all = ['whoami','kz projects','kz poems','contact','simulate pendulum','simulate quantum','simulate mandelbrot','history','clear','help','sudo'];
     const match = all.find(c => c.startsWith(val));
     if (match) cmdInput.value = match;
   }
