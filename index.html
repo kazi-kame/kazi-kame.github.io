@@ -677,6 +677,14 @@ const DATA = {
       url:   "https://github.com/kazi-kame/mandelwalk",
       runnable: true,
     },
+    {
+      id:    "stealth-fsr-sim",
+      title: "stealth-fsr-sim",
+      desc:  "Forward-scatter radar simulation for stealth aircraft detection. Bistatic geometry, RCS modelling, FFT-based frequency signatures, TDOA tracking, and minimax GDOP array optimization — targeting the B-2 Spirit.",
+      tags:  ["Python", "Radar", "Signal Processing", "Stealth Detection", "FSR", "Bistatic"],
+      url:   "https://github.com/kazi-kame/stealth-fsr-sim",
+      runnable: false,
+    },
   ],
 
   poems: [
@@ -877,7 +885,7 @@ async function boot() {
 
 function renderHelp() {
   const cmds = [
-    'whoami', 'kz projects', 'kz poems', 'contact', 'simulate pendulum', 'simulate quantum', 'simulate mandelbrot', 'history', 'clear', 'help'
+    'whoami', 'kz projects', 'kz poems', 'contact', 'simulate pendulum', 'simulate quantum', 'simulate mandelbrot', 'simulate b2', 'history', 'clear', 'help'
   ];
   const btns = cmds.map(c =>
     `<button class="cmd-btn" onclick="runCmd('${c}')">${c}</button>`
@@ -1409,6 +1417,333 @@ function startMandelbrot() {
   }, 60);
 }
 
+// ─── B2 STEALTH RADAR SIMULATION ─────────────────────────────────────────────
+
+function startB2() {
+  if (simInterval) clearInterval(simInterval);
+
+  const uid = 'b2-' + Date.now();
+  const CW = 520, CH = 520;
+  const CR = 220;
+  const CX = CW / 2, CY = CH / 2;
+
+  const html = `
+    <div id="sim-container" style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div class="muted" style="margin-bottom:6px;font-size:11px">B-2 SPIRIT — FSR STEALTH DETECTION SIM  <span style="color:var(--accent);animation:blink 1s step-end infinite">▮</span></div>
+        <canvas id="${uid}" width="${CW}" height="${CH}" style="display:block;border:1px solid var(--border);border-radius:4px;background:#000"></canvas>
+        <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+          <button id="sim-stop" onclick="stopSimulate()" style="background:transparent;border:1px solid var(--red);color:var(--red);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 12px;border-radius:3px;cursor:pointer">■ stop</button>
+          <span class="muted" style="font-size:10px">PPI RADAR SCOPE — BISTATIC FSR MODE</span>
+        </div>
+      </div>
+      <div id="${uid}-telem" style="font-family:'JetBrains Mono',monospace;font-size:11px;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px;line-height:2"></div>
+    </div>`;
+
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  output.appendChild(el);
+  scrollBottom();
+
+  const canvas = document.getElementById(uid);
+  const ctx    = canvas.getContext('2d');
+  const telem  = document.getElementById(uid + '-telem');
+
+  const B2_LINES = [
+    "                    *                    ",
+    "                   /|\\                   ",
+    "                  / | \\                  ",
+    "                 /  |  \\                 ",
+    "               _/   |   \\_               ",
+    "             _/     |     \\_             ",
+    "           _/       |       \\_           ",
+    "         _/         |         \\_         ",
+    "       _/           |           \\_       ",
+    "     _/      B-2    |    SPIRIT   \\_     ",
+    "   _/               |               \\_   ",
+    " _/                 |                 \\_ ",
+    "/___________________+___________________\\",
+    " `-.___________.|_______|.___________.-' ",
+    "      `-._____.'         '._____.-'      ",
+    "            `-.___   ___.-'              ",
+    "                 `---'                   ",
+  ];
+  const B2_W = 41;
+  const B2_H = B2_LINES.length;
+  const CHAR_W = 7.2, CHAR_H = 11.5;
+  const B2_PX_W = B2_W * CHAR_W;
+  const B2_PX_H = B2_H * CHAR_H;
+
+  const b2Offscreen = document.createElement('canvas');
+  b2Offscreen.width  = Math.ceil(B2_PX_W) + 4;
+  b2Offscreen.height = Math.ceil(B2_PX_H) + 4;
+  const b2Ctx = b2Offscreen.getContext('2d');
+
+  let sweepAngle  = -Math.PI / 2;
+  const SWEEP_SPD = 0.018;
+
+  let trackT      = 0;
+  const TRACK_SPD = 0.0008;
+  const trackX0   = CX - CR * 0.92, trackY0 = CY - CR * 0.55;
+  const trackX1   = CX + CR * 0.88, trackY1 = CY + CR * 0.60;
+
+  const ghosts    = [];
+  const MAX_GHOST = 28;
+  const afterglow = [];
+  const MAX_GLOW  = 90;
+  let telemFrame  = 0;
+  let trackLost   = false;
+  let trackLostTimer = 0;
+  const blips     = [];
+
+  function getAccentRGB() {
+    const raw = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#00ff41';
+    if (raw.startsWith('#') && raw.length === 7) {
+      return [parseInt(raw.slice(1,3),16), parseInt(raw.slice(3,5),16), parseInt(raw.slice(5,7),16)];
+    }
+    return [0, 255, 65];
+  }
+  function getDimRGB() {
+    const raw = getComputedStyle(document.body).getPropertyValue('--dim').trim() || '#1f5c1f';
+    if (raw.startsWith('#') && raw.length === 7) {
+      return [parseInt(raw.slice(1,3),16), parseInt(raw.slice(3,5),16), parseInt(raw.slice(5,7),16)];
+    }
+    return [31, 92, 31];
+  }
+  function accentColor(alpha) { const [r,g,b] = getAccentRGB(); return `rgba(${r},${g},${b},${alpha})`; }
+  function dimColor(alpha)    { const [r,g,b] = getDimRGB();    return `rgba(${r},${g},${b},${alpha})`; }
+
+  function drawScope() {
+    ctx.clearRect(0, 0, CW, CH);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, CW, CH);
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, CR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,18,4,0.98)';
+    ctx.fill();
+
+    for (let r = 1; r <= 4; r++) {
+      ctx.beginPath();
+      ctx.arc(CX, CY, CR * r / 4, 0, Math.PI * 2);
+      ctx.strokeStyle = dimColor(0.25);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = dimColor(0.18);
+    ctx.lineWidth = 0.6;
+    ctx.setLineDash([4, 6]);
+    ctx.beginPath(); ctx.moveTo(CX - CR, CY); ctx.lineTo(CX + CR, CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, CY - CR); ctx.lineTo(CX, CY + CR); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX - CR*0.707, CY - CR*0.707); ctx.lineTo(CX + CR*0.707, CY + CR*0.707); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX + CR*0.707, CY - CR*0.707); ctx.lineTo(CX - CR*0.707, CY + CR*0.707); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, CR, 0, Math.PI * 2);
+    ctx.strokeStyle = accentColor(0.55);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.fillStyle = accentColor(0.4);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const bearingLabels = ['N','030','060','E','120','150','S','210','240','W','300','330'];
+    for (let i = 0; i < 12; i++) {
+      const a = (i * 30 - 90) * Math.PI / 180;
+      ctx.fillText(bearingLabels[i], CX + (CR + 14) * Math.cos(a), CY + (CR + 14) * Math.sin(a));
+      ctx.beginPath();
+      ctx.moveTo(CX + (CR - 6) * Math.cos(a), CY + (CR - 6) * Math.sin(a));
+      ctx.lineTo(CX + CR * Math.cos(a), CY + CR * Math.sin(a));
+      ctx.strokeStyle = accentColor(0.35);
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  function drawAfterglow() {
+    for (const ag of afterglow) {
+      ctx.beginPath();
+      ctx.moveTo(CX, CY);
+      ctx.arc(CX, CY, CR - 1, ag.angle - 0.03, ag.angle);
+      ctx.closePath();
+      ctx.fillStyle = accentColor(ag.alpha * 0.18);
+      ctx.fill();
+    }
+  }
+
+  function drawSweep() {
+    for (let i = 5; i >= 0; i--) {
+      const a = sweepAngle - i * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(CX, CY);
+      ctx.lineTo(CX + CR * Math.cos(a), CY + CR * Math.sin(a));
+      ctx.strokeStyle = accentColor((6 - i) / 6 * 0.6);
+      ctx.lineWidth = 1.5 - i * 0.18;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(CX + CR * Math.cos(sweepAngle), CY + CR * Math.sin(sweepAngle));
+    ctx.strokeStyle = accentColor(0.95);
+    ctx.lineWidth = 2;
+    ctx.shadowColor = accentColor(0.8);
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  function drawBlips() {
+    for (const bp of blips) {
+      ctx.beginPath();
+      ctx.arc(bp.x, bp.y, 5, 0, Math.PI * 2);
+      ctx.strokeStyle = accentColor(bp.alpha * 0.7);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(bp.x, bp.y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = accentColor(bp.strongAlpha);
+      ctx.shadowColor = accentColor(bp.strongAlpha);
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  function drawB2(bx, by, alpha) {
+    if (alpha < 0.01) return;
+    b2Ctx.clearRect(0, 0, b2Offscreen.width, b2Offscreen.height);
+    b2Ctx.font = '10px "JetBrains Mono", monospace';
+    const [r, g, b] = getAccentRGB();
+    for (let i = 0; i < B2_LINES.length; i++) {
+      const line = B2_LINES[i];
+      for (let j = 0; j < line.length; j++) {
+        const ch = line[j];
+        if (ch === ' ') continue;
+        const isEdge = '_/\\|*`\'-+.'.includes(ch);
+        b2Ctx.fillStyle = `rgba(${r},${g},${b},${isEdge ? alpha : alpha * 0.55})`;
+        b2Ctx.fillText(ch, j * CHAR_W, (i + 1) * CHAR_H);
+      }
+    }
+    ctx.save();
+    ctx.shadowColor = `rgba(${r},${g},${b},${alpha * 0.6})`;
+    ctx.shadowBlur  = 14 * alpha;
+    ctx.drawImage(b2Offscreen, bx - B2_PX_W / 2, by - B2_PX_H / 2);
+    ctx.restore();
+  }
+
+  function drawGhosts() {
+    for (const g of ghosts) drawB2(g.x, g.y, g.alpha * 0.22);
+  }
+
+  function sweepPassingB2(bx, by) {
+    let diff = sweepAngle - Math.atan2(by - CY, bx - CX);
+    while (diff >  Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    return Math.abs(diff) < 0.12;
+  }
+
+  function updateTelem(bx, by, b2Alpha, sweepNearB2) {
+    telemFrame++;
+    const noise = () => (Math.random() - 0.5) * 2;
+    const inScope = Math.hypot(bx - CX, by - CY) < CR;
+    const bistaticFreq = (312 + trackT * 180 + noise() * 8).toFixed(1);
+    const rcs = sweepNearB2 && !trackLost ? (-14.2 + noise() * 2.1).toFixed(1) : (-38.0 + noise() * 4).toFixed(1);
+    const tdoa = sweepNearB2 && !trackLost ? (0.003 + noise() * 0.0008).toFixed(4) : '-------';
+    const gdop = (2.41 + noise() * 0.15).toFixed(2);
+    const bearingDeg = ((Math.atan2(by - CY, bx - CX) * 180 / Math.PI + 90 + 360) % 360).toFixed(1);
+    const rangePct   = (Math.hypot(bx - CX, by - CY) / CR * 100).toFixed(0);
+    const trackStatus = trackLost
+      ? `<span style="color:var(--red);animation:blink 0.6s step-end infinite">&#x26A0; TRACK LOST</span>`
+      : sweepNearB2 && inScope
+        ? `<span style="color:var(--yellow)">&#x25C8; INTERMITTENT</span>`
+        : `<span style="color:var(--dim)">&#xB7; SEARCHING</span>`;
+    const sweepBearing = ((sweepAngle * 180 / Math.PI + 90 + 360) % 360).toFixed(0);
+    telem.innerHTML = `
+<div style="color:var(--accent);letter-spacing:0.1em;font-size:10px;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:8px">FSR RADAR CONSOLE</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:10.5px;line-height:1.9">
+  <span style="color:var(--dim)">TARGET</span><span style="color:var(--accent)">B-2 SPIRIT</span>
+  <span style="color:var(--dim)">TRACK</span>${trackStatus}
+  <span style="color:var(--dim)">BEARING</span><span style="color:var(--text)">${bearingDeg}&deg;</span>
+  <span style="color:var(--dim)">RANGE</span><span style="color:var(--text)">${rangePct}%</span>
+  <span style="color:var(--dim)">SWEEP</span><span style="color:var(--text)">${sweepBearing}&deg;</span>
+</div>
+<div style="border-top:1px solid var(--border);margin:8px 0"></div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:10.5px;line-height:1.9">
+  <span style="color:var(--dim)">BISTATIC f</span><span style="color:var(--blue)">${bistaticFreq} Hz</span>
+  <span style="color:var(--dim)">RCS EST</span><span style="color:var(--blue)">${rcs} dBsm</span>
+  <span style="color:var(--dim)">TDOA</span><span style="color:var(--blue)">${tdoa} s</span>
+  <span style="color:var(--dim)">GDOP</span><span style="color:var(--blue)">${gdop}</span>
+</div>
+<div style="border-top:1px solid var(--border);margin:8px 0"></div>
+<div style="font-size:9.5px;color:var(--dim);line-height:1.7">MODE: FORWARD-SCATTER<br>GEOMETRY: BISTATIC<br>TX: FIXED EMITTER<br>RX: PASSIVE ARRAY<br>FREQ: L-BAND 1.3 GHz</div>`;
+  }
+
+  let frame = 0;
+  simInterval = setInterval(() => {
+    frame++;
+    sweepAngle += SWEEP_SPD;
+    if (sweepAngle > Math.PI) sweepAngle -= Math.PI * 2;
+
+    afterglow.unshift({ angle: sweepAngle, alpha: 1.0 });
+    for (const ag of afterglow) ag.alpha *= 0.968;
+    if (afterglow.length > MAX_GLOW) afterglow.pop();
+
+    trackT += TRACK_SPD;
+    if (trackT > 1.18) trackT = -0.15;
+
+    const bx = trackX0 + (trackX1 - trackX0) * trackT;
+    const by = trackY0 + (trackY1 - trackY0) * trackT;
+    const inScope = Math.hypot(bx - CX, by - CY) < CR - 10;
+    const sweepNear = sweepPassingB2(bx, by) && inScope;
+
+    if (sweepNear && !trackLost && Math.random() < 0.12) {
+      trackLost = true;
+      trackLostTimer = 80 + Math.floor(Math.random() * 120);
+    }
+    if (trackLost) { trackLostTimer--; if (trackLostTimer <= 0) trackLost = false; }
+
+    let b2Alpha = 0.04;
+    if (sweepNear && !trackLost && inScope) {
+      b2Alpha = 0.92;
+      blips.unshift({ x: bx, y: by, alpha: 1.0, strongAlpha: 1.0 });
+      if (blips.length > 18) blips.pop();
+    }
+    for (const bp of blips) { bp.alpha *= 0.975; bp.strongAlpha *= 0.92; }
+
+    if (frame % 6 === 0 && inScope) {
+      ghosts.unshift({ x: bx, y: by, alpha: b2Alpha });
+      if (ghosts.length > MAX_GHOST) ghosts.pop();
+    }
+    for (const g of ghosts) g.alpha *= 0.94;
+
+    drawScope();
+    drawAfterglow();
+    drawGhosts();
+    drawBlips();
+    drawSweep();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX, CY, CR - 1, 0, Math.PI * 2);
+    ctx.clip();
+    drawB2(bx, by, b2Alpha);
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, CR, 0, Math.PI * 2);
+    ctx.strokeStyle = accentColor(0.55);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    if (frame % 3 === 0) updateTelem(bx, by, b2Alpha, sweepNear);
+  }, 30);
+}
+
 // ─── COMMAND PROCESSOR ───────────────────────────────────────────────────────
 
 async function runCmd(raw) {
@@ -1454,12 +1789,18 @@ async function runCmd(raw) {
     startMandelbrot();
     cmdInput.value = '';
     return;
+  } else if (cmd === 'simulate b2') {
+    await appendHTML('</div></div>');
+    startB2();
+    cmdInput.value = '';
+    return;
   } else if (cmd === 'simulate') {
     responseHTML = `<span class="info">specify a simulation:<br><br></span>` +
       `<div class="help-grid">` +
       `<button class="cmd-btn" onclick="runCmd('simulate pendulum')">simulate pendulum</button>` +
       `<button class="cmd-btn" onclick="runCmd('simulate quantum')">simulate quantum</button>` +
       `<button class="cmd-btn" onclick="runCmd('simulate mandelbrot')">simulate mandelbrot</button>` +
+      `<button class="cmd-btn" onclick="runCmd('simulate b2')">simulate b2</button>` +
       `</div>`;
   } else if (cmd.startsWith('sudo')) {
     responseHTML = renderSudo(cmd.slice(4).trim());
@@ -1503,7 +1844,7 @@ cmdInput.addEventListener('keydown', e => {
     e.preventDefault();
     // Basic autocomplete
     const val = cmdInput.value.toLowerCase();
-    const all = ['whoami','kz projects','kz poems','contact','simulate pendulum','simulate quantum','simulate mandelbrot','history','clear','help','sudo'];
+    const all = ['whoami','kz projects','kz poems','contact','simulate pendulum','simulate quantum','simulate mandelbrot','simulate b2','history','clear','help','sudo'];
     const match = all.find(c => c.startsWith(val));
     if (match) cmdInput.value = match;
   }
